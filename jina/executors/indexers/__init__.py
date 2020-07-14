@@ -64,7 +64,7 @@ class BaseIndexer(BaseExecutor):
         if len(vectors.shape) != 2:
             raise ValueError(f'vectors shape {vectors.shape} is not valid, expecting "vectors" to have rank of 2')
 
-        if not self.num_dim:
+        if not getattr(self, 'num_dim', None):
             self.num_dim = vectors.shape[1]
             self.dtype = vectors.dtype.name
         elif self.num_dim != vectors.shape[1]:

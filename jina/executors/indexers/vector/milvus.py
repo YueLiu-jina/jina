@@ -11,20 +11,23 @@ from .milvusdb.milvusdbhandler import MilvusDBHandler
 
 class MilvusIndexer(BaseVectorIndexer):
 
-    def __init__(self, host: str, port: int, collection_name: str, index_type: str, *args, **kwargs):
+    def __init__(self, host: str, port: int,
+                 collection_name: str, index_type: str,
+                 index_params: dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.host = host
         self.port = port
         self.collection_name = collection_name
         self.index_type = index_type
+        self.index_params = index_params
 
-    def __post_init__(self):
+    def post_init(self):
         super().post_init()
         self.milvus = MilvusDBHandler(self.host, self.port, self.collection_name)
 
     def get_query_handler(self):
         db_handler = self.milvus.connect()
-        db_handler.build_index(self.index_type, None)
+        db_handler.build_index(self.index_type, self.index_params)
         return db_handler
 
     def get_add_handler(self):
@@ -32,6 +35,10 @@ class MilvusIndexer(BaseVectorIndexer):
 
     def get_create_handler(self):
         return self.milvus.connect()
+
+    @property
+    def query_handler(self):
+        return self.get_query_handler()
 
     def add(self, keys: 'np.ndarray', vectors: 'np.ndarray', *args, **kwargs):
         self.validate_key_vector_shapes(keys, vectors)
